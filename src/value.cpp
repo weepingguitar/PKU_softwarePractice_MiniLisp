@@ -5,6 +5,8 @@
 
 #include "./value.h"
 #include "error.h"
+#include "eval_env.h"
+
 
 Value::Value(){}
 bool Value::isNumber(){
@@ -76,6 +78,10 @@ std::string StringValue::toString() const {
     return ss.str();
 }
 
+std::string StringValue::getString(){
+    return this->val;
+}
+
 std::vector<ValuePtr> StringValue::toVector(){
     std::vector<ValuePtr> v{std::make_shared<StringValue>(this->val)};
     return v;
@@ -85,6 +91,10 @@ NilValue::NilValue() : Value() {}
 
 std::string NilValue::toString() const {
     return "()";
+}
+
+std::vector<ValuePtr> NilValue::toVector(){
+    return std::vector<ValuePtr>();
 }
 
 SymbolValue::SymbolValue(const std::string& val) : Value(), val{val} {}
@@ -103,6 +113,18 @@ std::vector<ValuePtr> SymbolValue::toVector(){
 }
 
 PairValue::PairValue(ValuePtr leftval, ValuePtr rightval) : Value(), leftval{leftval}, rightval{rightval} {}
+
+PairValue::PairValue(const std::vector<ValuePtr>& params) : Value(), leftval{params[0]} {
+    if(params.size() == 1){
+        rightval = std::make_shared<NilValue>();
+    }
+    else{
+        auto start = params.begin() + 1;
+        auto end = params.end();
+        std::vector<ValuePtr> temp(start, end);
+        rightval = std::make_shared<PairValue>(temp);
+    }
+}
 
 std::string PairValue::pair_toString(bool start) const {
     if(typeid(*rightval) != typeid(PairValue))
@@ -167,6 +189,10 @@ std::vector<ValuePtr> PairValue::toVector(){
     return ret;
 }
 
+ValuePtr PairValue::getLeft(){
+    return this->leftval;
+}
+
 ValuePtr PairValue::getRight(){
     return this->rightval;
 }
@@ -177,6 +203,38 @@ std::string BuiltinProcValue::toString() const{
     return "#<procedure>";
 }
 
-ValuePtr BuiltinProcValue::call(std::vector<ValuePtr>& args){
-    return this->func(args);
+ValuePtr BuiltinProcValue::call(std::vector<ValuePtr>& args, EvalEnv& env){
+    return this->func(args, env);
+}
+
+LambdaValue::LambdaValue(ValuePtr argparams, ValuePtr argbody, std::shared_ptr<EvalEnv> env) : parent{env} {
+    auto params = argparams->toVector();
+    for(auto item : params){
+        if(auto name = item->asSymbol()){
+            this->params.push_back(*name);
+        }
+        else{
+            throw LispError("Invalid params");
+        }
+    }
+    auto body = argbody->toVector();
+    for(auto item : body){
+        this->body.push_back(item);
+    }
+}
+
+ValuePtr LambdaValue::apply(const std::vector<ValuePtr>& args){
+    if(args.size() != this->params.size()){
+        throw LispError("Wrong number of args.");
+    }
+    auto env = this->parent->createChild(params, args);
+    ValuePtr ret;
+    for(auto item : body){
+        ret = env->eval(item);
+    }
+    return ret;
+}
+
+std::string LambdaValue::toString() const {
+    return "#<procedure>";
 }

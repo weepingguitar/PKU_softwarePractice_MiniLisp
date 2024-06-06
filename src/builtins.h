@@ -1,11 +1,12 @@
 #ifndef BUILTINS_H
 #define BUILTINS_H
 
+#include <unordered_map>
+
 #include "./value.h"
 #include "./error.h"
+#include "eval_env.h"
 
-ValuePtr add(const std::vector<ValuePtr>& params);
-
-ValuePtr print(const std::vector<ValuePtr>& params);
+extern const std::unordered_map<std::string, ValuePtr> BuiltinFuncs;
 
 #endif
