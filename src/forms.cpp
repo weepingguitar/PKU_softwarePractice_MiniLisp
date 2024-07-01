@@ -2,6 +2,9 @@
 #include "error.h"
 
 ValuePtr defineForm(ValuePtr& arg, EvalEnv& env) {
+    if(typeid(*arg)==typeid(NilValue)){
+        throw LispError("error");
+    }
     auto leftval = static_cast<PairValue&>(*arg).getLeft();
     auto rightval = static_cast<PairValue&>(*arg).getRight();
     if(auto name = leftval->asSymbol()){
@@ -36,11 +39,17 @@ ValuePtr defineForm(ValuePtr& arg, EvalEnv& env) {
 }
 
 ValuePtr quote(ValuePtr& arg, EvalEnv& env){
+    if(typeid(*arg)==typeid(NilValue)){
+        throw LispError("error");
+    }
     ValuePtr val = static_cast<PairValue&>(*arg).getLeft();
     return val;
 }
 
 ValuePtr ifForm(ValuePtr& arg, EvalEnv& env){
+    if(typeid(*arg)==typeid(NilValue)){
+        throw LispError("error");
+    }
     auto args = arg->toVector();
     ValuePtr condition = env.eval(args[0]);
     if(condition->toString() == "#f"){
@@ -52,6 +61,9 @@ ValuePtr ifForm(ValuePtr& arg, EvalEnv& env){
 }
 
 ValuePtr andForm(ValuePtr& arg, EvalEnv& env){
+    if(typeid(*arg)==typeid(NilValue)){
+        throw LispError("error");
+    }
     ValuePtr val = std::make_shared<BooleanValue>(1);
     auto args = arg->toVector();
     for(ValuePtr item : args){
@@ -67,6 +79,9 @@ ValuePtr andForm(ValuePtr& arg, EvalEnv& env){
 }
 
 ValuePtr orForm(ValuePtr& arg, EvalEnv& env){
+    if(typeid(*arg)==typeid(NilValue)){
+        throw LispError("error");
+    }
     ValuePtr val = std::make_shared<BooleanValue>(0);
     auto args = arg->toVector();
     for(ValuePtr item : args){
@@ -79,12 +94,18 @@ ValuePtr orForm(ValuePtr& arg, EvalEnv& env){
 }
 
 ValuePtr lambdaForm(ValuePtr& arg, EvalEnv& env){
+    if(typeid(*arg)==typeid(NilValue)){
+        throw LispError("error");
+    }
     auto leftval = static_cast<PairValue&>(*arg).getLeft();
     auto rightval = static_cast<PairValue&>(*arg).getRight();
     return std::make_shared<LambdaValue>(leftval, rightval, env.shared_from_this());
 }
 
 ValuePtr condform(ValuePtr& arg, EvalEnv& env){
+    if(typeid(*arg)==typeid(NilValue)){
+        throw LispError("error");
+    }
     auto clauses = arg->toVector();
     ValuePtr ret = std::make_shared<NilValue>();
     for (int i = 0; i < clauses.size();i++) {
@@ -120,6 +141,9 @@ ValuePtr condform(ValuePtr& arg, EvalEnv& env){
 }
 
 ValuePtr beginform(ValuePtr& arg, EvalEnv& env){
+    if(typeid(*arg)==typeid(NilValue)){
+        throw LispError("error");
+    }
     auto exprs = arg->toVector();
     ValuePtr ret = std::make_shared<NilValue>();
     for(auto expr : exprs){
@@ -129,6 +153,9 @@ ValuePtr beginform(ValuePtr& arg, EvalEnv& env){
 }
 
 ValuePtr letform(ValuePtr& arg, EvalEnv& env){
+    if(typeid(*arg)==typeid(NilValue)){
+        throw LispError("error");
+    }
     auto args = arg->toVector();
     auto bindings = args[0]->toVector();
 
@@ -158,6 +185,9 @@ ValuePtr letform(ValuePtr& arg, EvalEnv& env){
 }
 
 ValuePtr quasiquote(ValuePtr& arg, EvalEnv& env){
+    if(typeid(*arg)==typeid(NilValue)){
+        throw LispError("error");
+    }
     auto args = static_cast<PairValue&>(*arg).getLeft()->toVector();
     for(auto& item : args){
         if(typeid(*item) == typeid(PairValue)){
