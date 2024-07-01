@@ -57,6 +57,7 @@ namespace builtin{
         else if(params.size() == 2){
             return std::make_shared<NumericValue>(nums[0] - nums[1]);
         }
+        return std::make_shared<NilValue>();
     }
 
     ValuePtr divide(const std::vector<ValuePtr>& params, EvalEnv& env){
@@ -165,7 +166,7 @@ namespace builtin{
     ValuePtr exitLisp(const std::vector<ValuePtr>& params, EvalEnv& env){
         checkInputNumber(params, {0, 1});
         if(params.size() == 1){
-            if(typeid(params[0])!=typeid(NumericValue)){
+            if(typeid(*params[0])!=typeid(NumericValue)){
                 throw LispError("type error");
             }
             std::exit(static_cast<NumericValue&>(*params[0]).getval());
@@ -303,6 +304,9 @@ namespace builtin{
 
     ValuePtr car(const std::vector<ValuePtr>& params, EvalEnv& env){
         checkInputNumber(params, {1});
+        if(typeid(*params[0])!=typeid(PairValue)){
+            throw LispError("typeError!");
+        }
         if(!paircheck(params, env)){
             throw LispError("Invalid input.");
         }
@@ -467,13 +471,19 @@ namespace builtin{
     }
 
     ValuePtr even(const std::vector<ValuePtr>& params, EvalEnv& env){
-        intcheck(params, env);
+        if(intcheck(params, env)->toString()=="#f")
+        {
+            throw LispError("typeError!");
+        }
         int val = static_cast<NumericValue&>(*params[0]).getval();
         return std::make_shared<BooleanValue>(val % 2==0);
     }
 
     ValuePtr odd(const std::vector<ValuePtr>& params, EvalEnv& env){
-        intcheck(params, env);
+        if(intcheck(params, env)->toString()=="#f")
+        {
+            throw LispError("typeError!");
+        }
         int val = static_cast<NumericValue&>(*params[0]).getval();
         return std::make_shared<BooleanValue>(val % 2!=0);
     }
