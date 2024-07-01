@@ -181,8 +181,7 @@ std::vector<ValuePtr> PairValue::toVector(){
     }
     if(typeid(*rightval) != typeid(PairValue))
     {
-        if(typeid(*rightval) != typeid(NilValue))
-            ret.push_back(rightval);
+        if (typeid(*rightval) != typeid(NilValue)) throw LispError("typeError");
         return ret;
     }
     static_cast<PairValue&>(*rightval).pushToVector(ret);
